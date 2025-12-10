@@ -13,9 +13,9 @@ const CyberButton: React.FC<CyberButtonProps> = ({ children, onClick, variant = 
   const baseStyles = "relative px-6 py-3 font-mono font-bold uppercase tracking-widest transition-all duration-300 group overflow-hidden border-2";
   
   const variants = {
-    primary: "border-cyber-green text-cyber-green hover:bg-cyber-green hover:text-cyber-black shadow-[0_0_10px_rgba(0,255,65,0.3)] hover:shadow-[0_0_20px_rgba(0,255,65,0.6)]",
-    secondary: "border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-cyber-black shadow-[0_0_10px_rgba(0,243,255,0.3)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]",
-    danger: "border-cyber-red text-cyber-red hover:bg-cyber-red hover:text-cyber-black shadow-[0_0_10px_rgba(255,42,42,0.3)] hover:shadow-[0_0_20px_rgba(255,42,42,0.6)]"
+    primary: "border-cyber-green text-cyber-green hover:bg-cyber-green hover:text-cyber-black drop-shadow-[0_0_8px_rgba(0,255,65,0.25)] hover:drop-shadow-[0_0_30px_rgba(0,255,65,0.6)]",
+    secondary: "border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-cyber-black drop-shadow-[0_0_8px_rgba(0,243,255,0.25)] hover:drop-shadow-[0_0_30px_rgba(0,243,255,0.6)]",
+    danger: "border-cyber-red text-cyber-red hover:bg-cyber-red hover:text-cyber-black drop-shadow-[0_0_8px_rgba(255,42,42,0.25)] hover:drop-shadow-[0_0_30px_rgba(255,42,42,0.6)]"
   };
 
   const content = (
@@ -24,8 +24,9 @@ const CyberButton: React.FC<CyberButtonProps> = ({ children, onClick, variant = 
         {children}
         <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
       </span>
-      {/* Glitch overlay on hover */}
-      <div className="absolute top-0 left-0 w-full h-full bg-white opacity-0 group-hover:opacity-10 skew-x-12 transition-opacity duration-100"></div>
+       {/* Neon overlay on hover (subtle, color-matched) */}
+       <div className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-20 skew-x-6 transition-opacity duration-150 pointer-events-none"
+         style={{background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.02) 100%)'}}></div>
     </>
   );
 
