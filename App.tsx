@@ -8,6 +8,7 @@ import ScrambleText from './components/ScrambleText';
 import CyberButton from './components/CyberButton';
 import SectionHeader from './components/SectionHeader';
 import TerminalWindow from './components/TerminalWindow';
+import ValidationError from './components/ValidationError';
 import { supabase } from './supabaseClient';
 
 // Custom Blue Shield Logo - Replaced with PNG asset
@@ -30,15 +31,34 @@ const ContactTerminal = () => {
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<{ schoolName?: string; email?: string }>({});
 
   const addToConsole = (text: string) => {
     setConsoleOutput(prev => [...prev, `> ${text}`]);
   };
 
+  const validateForm = (): boolean => {
+    const errors: { schoolName?: string; email?: string } = {};
+    
+    if (!formData.schoolName.trim()) {
+      errors.schoolName = "Nazwa szkoły / instytucji jest wymagana.";
+    }
+    
+    if (!formData.email.trim()) {
+      errors.email = "Email lub telefon kontaktowy jest wymagany.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && !/^\d{9,}$/.test(formData.email.replace(/\s/g, ''))) {
+      errors.email = "Podaj poprawny email lub numer telefonu.";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.schoolName || !formData.email) {
-      addToConsole("ERROR: Required fields missing.");
+    
+    if (!validateForm()) {
+      addToConsole("ERROR: Validation failed. Check required fields.");
       return;
     }
 
@@ -103,7 +123,7 @@ const ContactTerminal = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <label className="text-cyber-cyan font-mono text-xs tracking-wider uppercase flex items-center gap-2">
                 <Shield className="w-3 h-3" /> Nazwa Szkoły / Instytucji *
               </label>
@@ -112,15 +132,22 @@ const ContactTerminal = () => {
                 <input 
                   type="text" 
                   value={formData.schoolName}
-                  onChange={e => setFormData({...formData, schoolName: e.target.value})}
-                  className="w-full bg-black/50 border border-gray-700 text-white font-mono pl-8 pr-4 py-3 focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition-all placeholder-gray-700"
+                  onChange={e => {
+                    setFormData({...formData, schoolName: e.target.value});
+                    if (validationErrors.schoolName) {
+                      setValidationErrors({...validationErrors, schoolName: undefined});
+                    }
+                  }}
+                  className={`w-full bg-black/50 border text-white font-mono pl-8 pr-4 py-3 focus:outline-none transition-all placeholder-gray-700 ${
+                    validationErrors.schoolName ? 'border-cyber-red focus:border-cyber-red focus:ring-1 focus:ring-cyber-red' : 'border-gray-700 focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan'
+                  }`}
                   placeholder="np. PSP nr 2 w Brzesku"
-                  required
                 />
               </div>
+              <ValidationError message={validationErrors.schoolName || ''} isVisible={!!validationErrors.schoolName} />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <label className="text-cyber-cyan font-mono text-xs tracking-wider uppercase flex items-center gap-2">
                 <Globe className="w-3 h-3" /> Email / Telefon Kontaktowy *
               </label>
@@ -129,12 +156,19 @@ const ContactTerminal = () => {
                 <input 
                   type="text" 
                   value={formData.email}
-                  onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="w-full bg-black/50 border border-gray-700 text-white font-mono pl-8 pr-4 py-3 focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition-all placeholder-gray-700"
+                  onChange={e => {
+                    setFormData({...formData, email: e.target.value});
+                    if (validationErrors.email) {
+                      setValidationErrors({...validationErrors, email: undefined});
+                    }
+                  }}
+                  className={`w-full bg-black/50 border text-white font-mono pl-8 pr-4 py-3 focus:outline-none transition-all placeholder-gray-700 ${
+                    validationErrors.email ? 'border-cyber-red focus:border-cyber-red focus:ring-1 focus:ring-cyber-red' : 'border-gray-700 focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan'
+                  }`}
                   placeholder="sekretariat@szkola.pl"
-                  required
                 />
               </div>
+              <ValidationError message={validationErrors.email || ''} isVisible={!!validationErrors.email} />
             </div>
 
             <div className="space-y-1">
@@ -265,7 +299,7 @@ const App: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <CyberButton href="#workshops" variant="primary">ZAPISZ SIĘ</CyberButton>
+              <CyberButton href="#contact" variant="primary">ZAPISZ SIĘ</CyberButton>
               <CyberButton variant="secondary" href="#about">WIĘCEJ DANYCH</CyberButton>
             </div>
           </div>
