@@ -11,13 +11,16 @@ import TerminalWindow from './components/TerminalWindow';
 import { supabase } from './supabaseClient';
 
 // Custom Blue Shield Logo - Replaced with PNG asset
-const SafeLabsLogo = ({ className = "h-10", glow = false }: { className?: string, glow?: boolean }) => (
-  <img 
-    src="./assets/logo.png" 
-    alt="Safe Labs" 
-    className={`${className} object-contain ${glow ? 'drop-shadow-[0_0_20px_rgba(0,243,255,0.6)]' : ''}`} 
-  />
-);
+const SafeLabsLogo = ({ className = "h-10", glow = false }: { className?: string, glow?: boolean }) => {
+  const logoUrl = new URL('./assets/logo.png', import.meta.url).href;
+  return (
+    <img 
+      src={logoUrl}
+      alt="Safe Labs" 
+      className={`${className} object-contain ${glow ? 'drop-shadow-[0_0_20px_rgba(0,243,255,0.6)]' : ''}`} 
+    />
+  );
+};
 
 const ContactTerminal = () => {
   const [formData, setFormData] = useState({
@@ -90,7 +93,7 @@ const ContactTerminal = () => {
           <div className="text-center py-12 space-y-4">
             <CheckCircle className="w-16 h-16 text-cyber-green mx-auto animate-bounce" />
             <h3 className="text-2xl font-bold text-white font-mono">ZGŁOSZENIE PRZYJĘTE</h3>
-            <p className="text-gray-400">Nasz operator skontaktuje się z placówką w ciągu 24h.</p>
+            <p className="text-gray-400">Nasz operator skontaktuje się z placówką w najbliszym czasie.</p>
             <button 
               onClick={() => setStatus('idle')}
               className="mt-4 text-cyber-green hover:underline font-mono text-sm"
