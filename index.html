@@ -61,6 +61,17 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #00ff41;
       }
+      /* Logo no-select & no-drag */
+      .no-drag {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-drag: none;
+      }
+      .select-none {
+        user-select: none;
+      }
       .crt::before {
         content: " ";
         display: block;
