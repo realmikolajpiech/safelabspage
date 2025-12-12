@@ -32,7 +32,7 @@ const CyberButton: React.FC<CyberButtonProps> = ({ children, onClick, variant = 
 
   if (href) {
     return (
-      <a href={href} className={`${baseStyles} ${variants[variant]} ${className} inline-block`}>
+      <a href={href} onClick={onClick} className={`${baseStyles} ${variants[variant]} ${className} inline-block`}>
         {content}
       </a>
     );

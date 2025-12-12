@@ -96,7 +96,7 @@ const ContactTerminal = () => {
   };
 
   return (
-    <div className="bg-[#050505] border border-gray-800 rounded-lg overflow-hidden max-w-2xl w-full mx-auto relative group">
+      <div className="bg-[#050505] border border-gray-800 rounded-lg overflow-hidden max-w-2xl w-full mx-auto relative group" id="contact-form">
       <div className="absolute inset-0 bg-cyber-green/5 group-hover:bg-cyber-green/10 transition-colors pointer-events-none"></div>
 
       <div className="bg-[#111] px-4 py-2 flex justify-between items-center border-b border-gray-800">
@@ -255,7 +255,7 @@ const App: React.FC = () => {
             <a href="#about" className="relative hover:text-cyber-cyan transition-colors hover:drop-shadow-[0_0_18px_rgba(0,243,255,0.45)]">[ O NAS ]</a>
             <a href="#threats" className="relative hover:text-cyber-red transition-colors hover:drop-shadow-[0_0_18px_rgba(255,42,42,0.45)]">[ ZAGROŻENIA ]</a>
             <a href="#workshops" className="relative hover:text-cyber-green transition-colors hover:drop-shadow-[0_0_18px_rgba(0,255,65,0.45)]">[ WARSZTATY ]</a>
-            <CyberButton variant="primary" href="#contact">DOŁĄCZ TERAZ</CyberButton>
+            <CyberButton variant="primary" href="#contact-form">DOŁĄCZ TERAZ</CyberButton>
           </div>
 
           <button onClick={toggleMenu} className="md:hidden text-white hover:text-cyber-cyan transition-colors">
@@ -276,7 +276,7 @@ const App: React.FC = () => {
             <a href="#about" onClick={toggleMenu} className="text-2xl text-cyber-cyan">&lt; O NAS /&gt;</a>
             <a href="#threats" onClick={toggleMenu} className="text-2xl text-cyber-red">&lt; ZAGROŻENIA /&gt;</a>
             <a href="#workshops" onClick={toggleMenu} className="text-2xl text-cyber-green">&lt; WARSZTATY /&gt;</a>
-            <CyberButton onClick={toggleMenu} href="#contact">INITIALIZE</CyberButton>
+            <CyberButton onClick={toggleMenu} href="#contact-form">ZAPISZ SIĘ</CyberButton>
           </motion.div>
         )}
       </AnimatePresence>
@@ -304,7 +304,7 @@ const App: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <CyberButton href="#contact" variant="primary">ZAPISZ SIĘ</CyberButton>
+              <CyberButton href="#contact-form" variant="primary">ZAPISZ SIĘ</CyberButton>
               <CyberButton variant="secondary" href="#about">WIĘCEJ DANYCH</CyberButton>
             </div>
           </div>
