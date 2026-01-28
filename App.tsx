@@ -23,6 +23,17 @@ const SafeLabsLogo = ({ className = "h-10", glow = false }: { className?: string
   );
 };
 
+const ZstibLogo = ({ className = "h-10" }: { className?: string }) => {
+  const logoUrl = new URL('./assets/zstib.svg', import.meta.url).href;
+  return (
+    <img
+      src={logoUrl}
+      alt="ZSTiB Brzesko"
+      className={`${className} object-contain`}
+    />
+  );
+};
+
 const ContactTerminal = () => {
   const [formData, setFormData] = useState({
     schoolName: '',
@@ -243,13 +254,22 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-40 bg-cyber-black/90 backdrop-blur-md border-b border-white/5">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-3 cursor-pointer group select-none no-drag">
-            <SafeLabsLogo className="h-10 w-auto group-hover:scale-105 transition-transform duration-300 pointer-events-none" />
-            <div className="flex flex-col leading-none pointer-events-none">
-              <span className="text-white font-bold tracking-widest text-lg font-mono">SAFE</span>
-              <span className="text-cyber-cyan font-bold tracking-[0.2em] text-sm font-mono -mt-1">LABS</span>
-            </div>
-          </a>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-3 cursor-pointer group select-none no-drag">
+              <SafeLabsLogo className="h-10 w-auto group-hover:scale-105 transition-transform duration-300 pointer-events-none" />
+              <div className="flex flex-col leading-none pointer-events-none">
+                <span className="text-white font-bold tracking-widest text-lg font-mono">SAFE</span>
+                <span className="text-cyber-cyan font-bold tracking-[0.2em] text-sm font-mono -mt-1">LABS</span>
+              </div>
+            </a>
+
+            <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+
+            <a href="https://zstib.edu.pl/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group/sponsor transition-all">
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest hidden xl:block transition-colors">Partnerzy:</span>
+              <ZstibLogo className="h-12 w-auto transition-all duration-300" />
+            </a>
+          </div>
 
           <div className="hidden md:flex gap-8 items-center font-mono text-sm tracking-wide">
             <a href="#about" className="relative hover:text-cyber-cyan transition-colors hover:drop-shadow-[0_0_18px_rgba(0,243,255,0.45)]">[ O NAS ]</a>
