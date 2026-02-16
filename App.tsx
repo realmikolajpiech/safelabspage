@@ -11,6 +11,7 @@ import { SafeLabsLogo, ZstibLogo } from './components/Logos';
 
 import MainPage from './pages/MainPage';
 import PasswordCheckPage from './pages/PasswordCheckPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -199,6 +200,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/sprawdz-haslo" element={<PasswordCheckPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
         <Footer />
