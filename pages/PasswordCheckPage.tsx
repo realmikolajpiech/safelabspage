@@ -1,47 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Unlock, AlertTriangle, CheckCircle, RefreshCw, Key, Zap } from 'lucide-react';
+import zxcvbn from 'zxcvbn';
 import SectionHeader from '../components/SectionHeader';
 import CyberButton from '../components/CyberButton';
 import TerminalWindow from '../components/TerminalWindow';
 
-const calculateCrackTime = (password: string) => {
-  let poolSize = 0;
-  if (/[a-z]/.test(password)) poolSize += 26;
-  if (/[A-Z]/.test(password)) poolSize += 26;
-  if (/[0-9]/.test(password)) poolSize += 10;
-  if (/[^A-Za-z0-9]/.test(password)) poolSize += 32;
-
-  if (poolSize === 0) return "< 1 sekunda";
-
-  const combinations = Math.pow(poolSize, password.length);
-  // Assume a very fast offline cracking rig (e.g. 100 Billion guesses/second)
-  const speed = 100_000_000_000;
-  const seconds = combinations / speed;
-
-  if (seconds < 1) return "< 1 sekunda";
+const formatLargeTime = (seconds: number): string => {
+  if (seconds < 1) return "Mniej niż sekunda";
   if (seconds < 60) return `${Math.floor(seconds)} sekund`;
-
+  
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} min ${Math.floor(seconds % 60)} s`;
-
+  
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} godz. ${minutes % 60} min`;
-
+  
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days} dni ${hours % 24} godz.`;
-
+  
   const months = Math.floor(days / 30);
   if (months < 12) return `${months} mies. ${days % 30} dni`;
-
+  
   const years = Math.floor(days / 365);
-  if (years < 100) return `${years} lat ${Math.floor((days % 365) / 30)} mies.`;
+  
   if (years < 1000) return `${years} lat`;
-  if (years < 1000000) return `${(years / 1000).toFixed(1)} tys. lat`;
-  if (years < 1000000000) return `${(years / 1000000).toFixed(1)} mln lat`;
-  if (years < 1000000000000) return `${(years / 1000000000).toFixed(1)} mld lat`;
+  if (years < 1_000_000) return `${(years / 1000).toFixed(1)} tys. lat`;
+  if (years < 1_000_000_000) return `${(years / 1_000_000).toFixed(1)} mln lat`;
+  if (years < 1_000_000_000_000) return `${(years / 1_000_000_000).toFixed(1)} mld lat`;
+  if (years < 1_000_000_000_000_000) return `${(years / 1_000_000_000_000).toFixed(1)} bilionów lat`;
+  if (years < 1_000_000_000_000_000_000) return `${(years / 1_000_000_000_000_000).toFixed(1)} biliardów lat`;
+  if (years < 1e21) return `${(years / 1e18).toFixed(1)} trylionów lat`;
+  if (years < 1e24) return `${(years / 1e21).toFixed(1)} tryliardów lat`;
+  
+  return `${years.toExponential(2).replace('+', '')} lat`;
+};
 
-  return "Wieczność";
+const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
+  const messages: string[] = [];
+  
+  // Warning translation
+  if (feedback.warning) {
+    const warnings: {[key: string]: string} = {
+      "Straight rows of keys are easy to guess": "Proste ciągi klawiszy są łatwe do odgadnięcia",
+      "Short keyboard patterns are easy to guess": "Krótkie wzorce klawiaturowe są łatwe do odgadnięcia",
+      "Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"": "Powtórzenia typu \"abcabcabc\" są słabym zabezpieczeniem",
+      "Sequences like abc or 6543 are easy to guess": "Sekwencje typu abc lub 6543 są łatwe do złamania",
+      "Recent years are easy to guess": "Ostatnie lata są łatwe do odgadnięcia",
+      "Dates are often easy to guess": "Daty są często łatwe do odgadnięcia",
+      "Top 10 common passwords are easy to guess": "To jedno z 10 najpopularniejszych haseł",
+      "Top 100 common passwords are easy to guess": "To jedno ze 100 najpopularniejszych haseł",
+      "Capitalization doesn't help very much": "Wielkie litery na początku nie zwiększają znacząco siły",
+      "All-uppercase is almost as easy to guess as all-lowercase": "Same wielkie litery są tak łatwe jak same małe",
+      "Reversed words are not much harder to guess": "Odwrócone słowa nie są trudniejsze do złamania",
+      "Predictable substitutions like '@' instead of 'a' don't help very much": "Przewidywalne zamienniki (np. '@' zamiast 'a') słabo chronią"
+    };
+    messages.push(`[!] ${warnings[feedback.warning] || feedback.warning}`);
+  }
+
+  // Suggestions translation
+  feedback.suggestions.forEach(suggestion => {
+    const suggestions: {[key: string]: string} = {
+      "Add another word or two. Uncommon words are better.": "Dodaj kolejne słowo lub dwa. Rzadkie słowa są lepsze.",
+      "Use a longer keyboard pattern with more turns.": "Użyj dłuższego wzoru klawiatury z większą liczbą zwrotów.",
+      "Avoid repeated words and characters.": "Unikaj powtarzania słów i znaków.",
+      "Avoid sequences.": "Unikaj sekwencji (np. 123, abc).",
+      "Avoid recent years.": "Unikaj używania ostatnich lat.",
+      "Avoid years that are associated with you.": "Unikaj lat, które są z Tobą powiązane.",
+      "Avoid dates and years that are associated with you.": "Unikaj dat i lat powiązanych z Tobą.",
+      "Capitalization doesn't help very much": "Wielkie litery w środku hasła są lepsze niż na początku.",
+      "All-uppercase is almost as easy to guess as all-lowercase": "Mieszaj wielkość liter.",
+      "Reverse the order of words.": "Zmień kolejność słów.",
+      "Use a few words, avoid common phrases.": "Użyj kilku słów, unikaj popularnych fraz.",
+      "No need for symbols, digits, or uppercase letters": "Nie musisz używać symboli, jeśli hasło jest długie i złożone."
+    };
+    messages.push(`[i] ${suggestions[suggestion] || suggestion}`);
+  });
+
+  return messages;
 };
 
 const PasswordCheckPage = () => {
@@ -64,77 +100,71 @@ const PasswordCheckPage = () => {
 
     // Simulate analysis time
     setTimeout(() => {
-      let score = 0;
-      const feedback = [];
+      const zResult = zxcvbn(password);
       
-      // Length Check
-      if (password.length < 8) {
-        feedback.push("[!] Hasło jest zbyt krótkie (min. 8 znaków)");
-      } else if (password.length >= 12) {
-        score += 25;
-        feedback.push("[✓] Długość hasła jest odpowiednia");
-      } else {
-        score += 10;
-        feedback.push("[✓] Długość hasła jest akceptowalna");
+      // Calculate Score based on zxcvbn (0-4) mapped to 0-100
+      // 0 -> 0-20 (Very Weak)
+      // 1 -> 20-40 (Weak)
+      // 2 -> 40-60 (Medium)
+      // 3 -> 60-80 (Strong)
+      // 4 -> 80-100 (Very Strong)
+      
+      // Base score from zxcvbn
+      let score = zResult.score * 25;
+      
+      // Adjust within the range based on guesses to make it feel more granular
+      // guesses_log10 typically goes from 0 to ~15+
+      // We can add a small bonus for higher entropy within the same score bucket
+      const entropyBonus = Math.min(10, Math.max(0, zResult.guesses_log10)); 
+      if (score < 100) score += Math.floor(entropyBonus / 2);
+      score = Math.min(100, score);
+
+      const feedback: string[] = [];
+      const translatedFeedback = translateFeedback(zResult.feedback);
+      
+      if (translatedFeedback.length > 0) {
+        feedback.push(...translatedFeedback);
+      } else if (score >= 75) {
+        feedback.push("[✓] Brak wykrytych słabych wzorców");
+        feedback.push("[✓] Hasło wygląda na losowe i bezpieczne");
       }
 
-      // Character Variety
-      if (/[A-Z]/.test(password)) {
-        score += 15;
-        feedback.push("[✓] Zawiera wielkie litery");
-      } else {
-        feedback.push("[!] Brak wielkich liter");
+      // Add positive reinforcement checks if not already covered by negative feedback
+      if (password.length >= 12 && !feedback.some(f => f.includes("krótkie"))) {
+        feedback.push("[✓] Długość hasła jest bardzo dobra");
       }
-
-      if (/[a-z]/.test(password)) {
-        score += 15;
-        feedback.push("[✓] Zawiera małe litery");
-      } else {
-        feedback.push("[!] Brak małych liter");
-      }
-
-      if (/[0-9]/.test(password)) {
-        score += 15;
-        feedback.push("[✓] Zawiera cyfry");
-      } else {
-        feedback.push("[!] Brak cyfr");
-      }
-
       if (/[^A-Za-z0-9]/.test(password)) {
-        score += 30;
         feedback.push("[✓] Zawiera znaki specjalne");
-      } else {
-        feedback.push("[!] Brak znaków specjalnych (!@#$%)");
       }
-
-      // Common Patterns (Simplified)
-      if (/(123|abc|qwe|password|haslo|admin)/i.test(password)) {
-        score -= 50;
-        feedback.push("[!] CRITICAL: Wykryto popularny wzorzec!");
-      }
-
-      // Cap score
-      score = Math.max(0, Math.min(100, score));
-
-      // Determine Strength
+      
+      // Determine Strength Label
       let strength = "SŁABE";
       let color = "text-cyber-red";
 
-      if (score > 80) {
+      if (score >= 80) {
         strength = "BARDZO SILNE";
         color = "text-cyber-green";
-      } else if (score > 60) {
+      } else if (score >= 60) {
         strength = "SILNE";
         color = "text-cyber-cyan";
-      } else if (score > 40) {
+      } else if (score >= 40) {
         strength = "ŚREDNIE";
         color = "text-yellow-500";
-      } else if (score > 20) {
+      } else if (score >= 20) {
         strength = "SŁABE";
         color = "text-orange-500";
+      } else {
+        strength = "BARDZO SŁABE";
+        color = "text-red-600";
       }
 
-      const timeToCrack = calculateCrackTime(password);
+      // Calculate Crack Time
+      // We use zxcvbn's guesses.
+      // The UI says "offline attack 100 mld/s".
+      // zxcvbn provides guesses.
+      const speed = 100_000_000_000; // 100 billion per second
+      const seconds = zResult.guesses / speed;
+      const timeToCrack = formatLargeTime(seconds);
 
       setResult({
         score,
@@ -144,7 +174,7 @@ const PasswordCheckPage = () => {
         timeToCrack
       });
       setIsChecking(false);
-    }, 1500);
+    }, 800); // Slightly faster response
   };
 
   return (
