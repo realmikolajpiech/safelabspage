@@ -67,7 +67,7 @@ const Navigation = () => {
             </div>
           </div>
 
-          <div className="hidden md:flex gap-8 items-center font-mono text-sm tracking-wide">
+          <div className="hidden xl:flex gap-8 items-center font-mono text-sm tracking-wide">
             <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="relative hover:text-cyber-cyan transition-colors hover:drop-shadow-[0_0_18px_rgba(0,243,255,0.45)]">[ O NAS ]</a>
             <a href="#threats" onClick={(e) => handleNavClick(e, 'threats')} className="relative hover:text-cyber-red transition-colors hover:drop-shadow-[0_0_18px_rgba(255,42,42,0.45)]">[ ZAGROŻENIA ]</a>
             <a href="#workshops" onClick={(e) => handleNavClick(e, 'workshops')} className="relative hover:text-cyber-green transition-colors hover:drop-shadow-[0_0_18px_rgba(0,255,65,0.45)]">[ WARSZTATY ]</a>
@@ -81,7 +81,7 @@ const Navigation = () => {
             <CyberButton variant="primary" href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>DOŁĄCZ TERAZ</CyberButton>
           </div>
 
-          <button onClick={toggleMenu} className="md:hidden text-white hover:text-cyber-cyan transition-colors">
+          <button onClick={toggleMenu} className="xl:hidden text-white hover:text-cyber-cyan transition-colors">
             {isMobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -94,7 +94,7 @@ const Navigation = () => {
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
-            className="fixed inset-0 z-30 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8 md:hidden font-mono"
+            className="fixed inset-0 z-30 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8 xl:hidden font-mono"
           >
             <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="text-2xl text-cyber-cyan">&lt; O NAS /&gt;</a>
             <a href="#threats" onClick={(e) => handleNavClick(e, 'threats')} className="text-2xl text-cyber-red">&lt; ZAGROŻENIA /&gt;</a>
