@@ -6,9 +6,21 @@ import SectionHeader from '../components/SectionHeader';
 import CyberButton from '../components/CyberButton';
 import TerminalWindow from '../components/TerminalWindow';
 
+const plPlural = (n: number, one: string, few: string, many: string) => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (n === 1) return one;
+  if (mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14)) return few;
+  return many;
+};
+
 const formatLargeTime = (seconds: number): string => {
   if (seconds < 1) return "Mniej niż sekunda";
-  if (seconds < 60) return `${Math.floor(seconds)} sekund`;
+  if (seconds < 10) return `~${seconds.toFixed(1).replace('.', ',')} s`;
+  if (seconds < 60) {
+    const s = Math.max(1, Math.round(seconds));
+    return `${s} ${plPlural(s, 'sekunda', 'sekundy', 'sekund')}`;
+  }
   
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} min ${Math.floor(seconds % 60)} s`;
@@ -128,17 +140,25 @@ const PasswordCheckPage = () => {
       
       if (translatedFeedback.length > 0) {
         feedback.push(...translatedFeedback);
-      } else if (score >= 80) {
-        feedback.push("[✓] Brak wykrytych słabych wzorców");
-        feedback.push("[✓] Hasło wygląda na losowe i bezpieczne");
+      } else {
+        if (seconds < 60) {
+          feedback.push("[!] Hasło może zostać złamane w ataku offline w mniej niż minutę");
+          feedback.push("[i] Dodaj 2–3 losowe słowa lub wydłuż hasło (16+ znaków)");
+          feedback.push("[i] Unikaj krótkich fragmentów słownikowych i przewidywalnych wzorców");
+        } else if (score >= 80) {
+          feedback.push("[✓] Brak wykrytych słabych wzorców");
+          feedback.push("[✓] Hasło wygląda na losowe i bezpieczne");
+        } else {
+          feedback.push("[i] Zwiększ długość i losowość, aby utrudnić atak słownikowy");
+        }
       }
 
       // Add positive reinforcement checks if not already covered by negative feedback
       if (passwordToCheck.length >= 12 && !feedback.some(f => f.includes("krótkie"))) {
-        feedback.push("[✓] Długość hasła jest bardzo dobra");
+        feedback.push("[i] Długość hasła jest bardzo dobra");
       }
       if (/[^A-Za-z0-9]/.test(passwordToCheck)) {
-        feedback.push("[✓] Zawiera znaki specjalne");
+        feedback.push("[i] Zawiera znaki specjalne");
       }
 
       setResult({
@@ -282,7 +302,16 @@ const PasswordCheckPage = () => {
                     <div className="space-y-1">
                       <div className="text-white font-bold mb-2">RAPORT SZCZEGÓŁOWY:</div>
                       {result.feedback.map((item, idx) => (
-                        <div key={idx} className={`${item.includes('[!]') ? 'text-cyber-red' : 'text-cyber-green'}`}>
+                        <div
+                          key={idx}
+                          className={`${
+                            item.includes('[!]')
+                              ? 'text-cyber-red'
+                              : item.includes('[i]')
+                                ? 'text-gray-400'
+                                : 'text-cyber-green'
+                          }`}
+                        >
                           {item}
                         </div>
                       ))}
