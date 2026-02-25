@@ -36,6 +36,20 @@ const formatLargeTime = (seconds: number): string => {
   return `${years.toExponential(2).replace('+', '')} lat`;
 };
 
+const getStrengthFromSeconds = (seconds: number): { strength: string; color: string; score: number } => {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return { strength: "BARDZO SŁABE", color: "text-red-600", score: 5 };
+  }
+
+  if (seconds < 1) return { strength: "BARDZO SŁABE", color: "text-red-600", score: 10 };
+  if (seconds < 60) return { strength: "SŁABE", color: "text-orange-500", score: 25 };
+  if (seconds < 60 * 60) return { strength: "ŚREDNIE", color: "text-yellow-500", score: 45 };
+  if (seconds < 24 * 60 * 60) return { strength: "ŚREDNIE", color: "text-yellow-500", score: 55 };
+  if (seconds < 30 * 24 * 60 * 60) return { strength: "SILNE", color: "text-cyber-cyan", score: 70 };
+  if (seconds < 365 * 24 * 60 * 60) return { strength: "SILNE", color: "text-cyber-cyan", score: 80 };
+  return { strength: "BARDZO SILNE", color: "text-cyber-green", score: 95 };
+};
+
 const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
   const messages: string[] = [];
   
@@ -95,76 +109,37 @@ const PasswordCheckPage = () => {
   const checkPassword = () => {
     if (!password) return;
 
+    const passwordToCheck = password;
+
     setIsChecking(true);
     setResult(null);
 
     // Simulate analysis time
     setTimeout(() => {
-      const zResult = zxcvbn(password);
-      
-      // Calculate Score based on zxcvbn (0-4) mapped to 0-100
-      // 0 -> 0-20 (Very Weak)
-      // 1 -> 20-40 (Weak)
-      // 2 -> 40-60 (Medium)
-      // 3 -> 60-80 (Strong)
-      // 4 -> 80-100 (Very Strong)
-      
-      // Base score from zxcvbn
-      let score = zResult.score * 25;
-      
-      // Adjust within the range based on guesses to make it feel more granular
-      // guesses_log10 typically goes from 0 to ~15+
-      // We can add a small bonus for higher entropy within the same score bucket
-      const entropyBonus = Math.min(10, Math.max(0, zResult.guesses_log10)); 
-      if (score < 100) score += Math.floor(entropyBonus / 2);
-      score = Math.min(100, score);
+      const zResult = zxcvbn(passwordToCheck);
+
+      const speed = 100_000_000_000;
+      const seconds = zResult.guesses / speed;
+      const timeToCrack = formatLargeTime(seconds);
+      const { strength, color, score } = getStrengthFromSeconds(seconds);
 
       const feedback: string[] = [];
       const translatedFeedback = translateFeedback(zResult.feedback);
       
       if (translatedFeedback.length > 0) {
         feedback.push(...translatedFeedback);
-      } else if (score >= 75) {
+      } else if (score >= 80) {
         feedback.push("[✓] Brak wykrytych słabych wzorców");
         feedback.push("[✓] Hasło wygląda na losowe i bezpieczne");
       }
 
       // Add positive reinforcement checks if not already covered by negative feedback
-      if (password.length >= 12 && !feedback.some(f => f.includes("krótkie"))) {
+      if (passwordToCheck.length >= 12 && !feedback.some(f => f.includes("krótkie"))) {
         feedback.push("[✓] Długość hasła jest bardzo dobra");
       }
-      if (/[^A-Za-z0-9]/.test(password)) {
+      if (/[^A-Za-z0-9]/.test(passwordToCheck)) {
         feedback.push("[✓] Zawiera znaki specjalne");
       }
-      
-      // Determine Strength Label
-      let strength = "SŁABE";
-      let color = "text-cyber-red";
-
-      if (score >= 80) {
-        strength = "BARDZO SILNE";
-        color = "text-cyber-green";
-      } else if (score >= 60) {
-        strength = "SILNE";
-        color = "text-cyber-cyan";
-      } else if (score >= 40) {
-        strength = "ŚREDNIE";
-        color = "text-yellow-500";
-      } else if (score >= 20) {
-        strength = "SŁABE";
-        color = "text-orange-500";
-      } else {
-        strength = "BARDZO SŁABE";
-        color = "text-red-600";
-      }
-
-      // Calculate Crack Time
-      // We use zxcvbn's guesses.
-      // The UI says "offline attack 100 mld/s".
-      // zxcvbn provides guesses.
-      const speed = 100_000_000_000; // 100 billion per second
-      const seconds = zResult.guesses / speed;
-      const timeToCrack = formatLargeTime(seconds);
 
       setResult({
         score,
