@@ -62,6 +62,23 @@ const getStrengthFromSeconds = (seconds: number): { strength: string; color: str
   return { strength: "BARDZO SILNE", color: "text-cyber-green", score: 95 };
 };
 
+const getStrengthFromZxcvbnScore = (zScore: number): { strength: string; color: string; score: number } => {
+  switch (zScore) {
+    case 0:
+      return { strength: "BARDZO SŁABE", color: "text-red-600", score: 10 };
+    case 1:
+      return { strength: "SŁABE", color: "text-orange-500", score: 30 };
+    case 2:
+      return { strength: "ŚREDNIE", color: "text-yellow-500", score: 55 };
+    case 3:
+      return { strength: "SILNE", color: "text-cyber-cyan", score: 80 };
+    case 4:
+      return { strength: "BARDZO SILNE", color: "text-cyber-green", score: 95 };
+    default:
+      return { strength: "BARDZO SŁABE", color: "text-red-600", score: 5 };
+  }
+};
+
 const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
   const messages: string[] = [];
   
@@ -76,6 +93,7 @@ const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
       "Dates are often easy to guess": "Daty są często łatwe do odgadnięcia",
       "Top 10 common passwords are easy to guess": "To jedno z 10 najpopularniejszych haseł",
       "Top 100 common passwords are easy to guess": "To jedno ze 100 najpopularniejszych haseł",
+      "This is similar to a commonly used password": "To hasło jest podobne do często używanego hasła",
       "Capitalization doesn't help very much": "Wielkie litery na początku nie zwiększają znacząco siły",
       "All-uppercase is almost as easy to guess as all-lowercase": "Same wielkie litery są tak łatwe jak same małe",
       "Reversed words are not much harder to guess": "Odwrócone słowa nie są trudniejsze do złamania",
@@ -130,10 +148,14 @@ const PasswordCheckPage = () => {
     setTimeout(() => {
       const zResult = zxcvbn(passwordToCheck);
 
-      const speed = 100_000_000_000;
-      const seconds = zResult.guesses / speed;
+      const speed = 10_000;
+      const seconds =
+        (zResult as any)?.crack_times_seconds?.offline_slow_hashing_1e4_per_second ??
+        ((zResult as any)?.guesses ? (zResult as any).guesses / speed : 0);
       const timeToCrack = formatLargeTime(seconds);
-      const { strength, color, score } = getStrengthFromSeconds(seconds);
+      const zScore = typeof (zResult as any)?.score === 'number' ? (zResult as any).score : -1;
+      const { strength, color, score } =
+        zScore >= 0 ? getStrengthFromZxcvbnScore(zScore) : getStrengthFromSeconds(seconds);
 
       const feedback: string[] = [];
       const translatedFeedback = translateFeedback(zResult.feedback);
@@ -145,7 +167,7 @@ const PasswordCheckPage = () => {
           feedback.push("[!] Hasło może zostać złamane w ataku offline w mniej niż minutę");
           feedback.push("[i] Dodaj 2–3 losowe słowa lub wydłuż hasło (16+ znaków)");
           feedback.push("[i] Unikaj krótkich fragmentów słownikowych i przewidywalnych wzorców");
-        } else if (score >= 80) {
+        } else if (zScore >= 3 || score >= 80) {
           feedback.push("[✓] Brak wykrytych słabych wzorców");
           feedback.push("[✓] Hasło wygląda na losowe i bezpieczne");
         } else {
@@ -320,7 +342,7 @@ const PasswordCheckPage = () => {
                     <div className="pt-4 border-t border-gray-800">
                       <div className="text-gray-400">Szacowany czas łamania:</div>
                       <div className={`text-xl font-bold ${result.color}`}>{result.timeToCrack}</div>
-                      <div className="text-[10px] text-gray-600 mt-1">* Przy ataku offline 100 mld haseł/s</div>
+                      <div className="text-[10px] text-gray-600 mt-1">* Przy ataku offline 10 tys. haseł/s (wolne haszowanie)</div>
                     </div>
                   </div>
                 )}
