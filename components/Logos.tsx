@@ -22,3 +22,14 @@ export const ZstibLogo = ({ className = "h-10" }: { className?: string }) => {
     />
   );
 };
+
+export const MokLogo = ({ className = "h-10" }: { className?: string }) => {
+  const logoUrl = new URL('../assets/mok-logo.png', import.meta.url).href;
+  return (
+    <img
+      src={logoUrl}
+      alt="MOK"
+      className={`${className} object-contain`}
+    />
+  );
+};
