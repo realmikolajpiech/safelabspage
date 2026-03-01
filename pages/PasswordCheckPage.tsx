@@ -84,7 +84,7 @@ const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
   
   // Warning translation
   if (feedback.warning) {
-    const warnings: {[key: string]: string} = {
+    const warnings: { [key: string]: string } = {
       "Straight rows of keys are easy to guess": "Proste ciągi klawiszy są łatwe do odgadnięcia",
       "Short keyboard patterns are easy to guess": "Krótkie wzorce klawiaturowe są łatwe do odgadnięcia",
       "Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"": "Powtórzenia typu \"abcabcabc\" są słabym zabezpieczeniem",
@@ -99,12 +99,17 @@ const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
       "Reversed words are not much harder to guess": "Odwrócone słowa nie są trudniejsze do złamania",
       "Predictable substitutions like '@' instead of 'a' don't help very much": "Przewidywalne zamienniki (np. '@' zamiast 'a') słabo chronią"
     };
-    messages.push(`[!] ${warnings[feedback.warning] || feedback.warning}`);
+    messages.push(
+      `[!] ${
+        warnings[feedback.warning] ||
+        "To hasło zawiera potencjalnie słaby wzorzec. Rozważ jego zmianę."
+      }`
+    );
   }
 
   // Suggestions translation
   feedback.suggestions.forEach(suggestion => {
-    const suggestions: {[key: string]: string} = {
+    const suggestions: { [key: string]: string } = {
       "Add another word or two. Uncommon words are better.": "Dodaj kolejne słowo lub dwa. Rzadkie słowa są lepsze.",
       "Use a longer keyboard pattern with more turns.": "Użyj dłuższego wzoru klawiatury z większą liczbą zwrotów.",
       "Avoid repeated words and characters.": "Unikaj powtarzania słów i znaków.",
@@ -118,7 +123,12 @@ const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
       "Use a few words, avoid common phrases.": "Użyj kilku słów, unikaj popularnych fraz.",
       "No need for symbols, digits, or uppercase letters": "Nie musisz używać symboli, jeśli hasło jest długie i złożone."
     };
-    messages.push(`[i] ${suggestions[suggestion] || suggestion}`);
+    messages.push(
+      `[i] ${
+        suggestions[suggestion] ||
+        "Rozważ wydłużenie hasła, dodanie kolejnych słów i zwiększenie jego losowości."
+      }`
+    );
   });
 
   return messages;
@@ -278,8 +288,8 @@ const PasswordCheckPage = () => {
              <TerminalWindow title="password_audit_tool.exe" variant={result?.score && result.score > 60 ? 'success' : result?.score && result.score > 40 ? 'default' : 'danger'} className="h-full min-h-[400px]">
               <div className="font-mono text-sm leading-relaxed space-y-2">
                 <div className="text-gray-500 border-b border-gray-800 pb-2 mb-4">
-                  Safe Labs Security Auditor v1.0.4<br/>
-                  Initializing cryptographic engines...
+                  Safe Labs Security Auditor v1.0.4<br />
+                  Inicjalizowanie modułów kryptograficznych...
                 </div>
 
                 {!result && !isChecking && (
@@ -290,9 +300,9 @@ const PasswordCheckPage = () => {
 
                 {isChecking && (
                   <div className="space-y-1">
-                    <div className="text-cyber-cyan">Running entropy analysis...</div>
-                    <div className="text-cyber-cyan">Checking against leaked databases...</div>
-                    <div className="text-cyber-cyan">Calculating brute-force time...</div>
+                    <div className="text-cyber-cyan">Uruchamianie analizy entropii...</div>
+                    <div className="text-cyber-cyan">Sprawdzanie w bazach wycieków...</div>
+                    <div className="text-cyber-cyan">Obliczanie czasu ataku brute-force...</div>
                     <div className="w-full bg-gray-800 h-2 rounded mt-2 overflow-hidden">
                       <div className="h-full bg-cyber-cyan animate-[width_1.5s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
                     </div>
@@ -318,7 +328,7 @@ const PasswordCheckPage = () => {
                           }`}
                         ></motion.div>
                       </div>
-                      <div className="mt-2 text-right text-xs text-gray-500">Score: {result.score}/100</div>
+                      <div className="mt-2 text-right text-xs text-gray-500">Wynik: {result.score}/100</div>
                     </div>
 
                     <div className="space-y-1">
