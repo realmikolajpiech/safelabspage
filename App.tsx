@@ -7,7 +7,7 @@ import MatrixBackground from './components/MatrixBackground';
 import CyberButton from './components/CyberButton';
 import SectionHeader from './components/SectionHeader';
 import ContactTerminal from './components/ContactTerminal';
-import { SafeLabsLogo, ZstibLogo ,MokLogo} from './components/Logos';
+import { SafeLabsLogo, ZstibLogo ,MokLogo, BibliotekaLogo} from './components/Logos';
 
 import MainPage from './pages/MainPage';
 import PasswordCheckPage from './pages/PasswordCheckPage';
@@ -65,7 +65,11 @@ const Navigation = () => {
                 <ZstibLogo className="h-12 w-auto transition-all duration-300" />
               </a>
               <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="group/sponsor transition-all">
-                <MokLogo className="h-10 w-auto transition-all duration-300" />              </a>
+                <MokLogo className="h-10 w-auto transition-all duration-300" />              
+              </a>
+              <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="group/sponsor transition-all">
+                <BibliotekaLogo className="h-10 w-auto transition-all duration-300" />              
+              </a>
             </div>
           </div>
 

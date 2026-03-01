@@ -33,3 +33,14 @@ export const MokLogo = ({ className = "h-10" }: { className?: string }) => {
     />
   );
 };
+
+export const BibliotekaLogo = ({ className = "h-10" }: { className?: string }) => {
+  const logoUrl = new URL('../assets/biblioteka.png', import.meta.url).href;
+  return (
+    <img
+      src={logoUrl}
+      alt="Biblioteka Brzesko"
+      className={`${className} object-contain`}
+    />
+  );
+};
