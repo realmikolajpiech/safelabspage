@@ -47,7 +47,7 @@ const Navigation = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-40 bg-cyber-black/90 backdrop-blur-md border-b border-white/5">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="w-full px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4 sm:gap-6">
             <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer group select-none no-drag">
               <SafeLabsLogo className="h-10 w-auto group-hover:scale-105 transition-transform duration-300 pointer-events-none" />
@@ -68,7 +68,7 @@ const Navigation = () => {
                 <MokLogo className="h-10 w-auto transition-all duration-300" />              
               </a>
               <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="group/sponsor transition-all">
-                <BibliotekaLogo className="h-10 w-auto transition-all duration-300" />              
+                <BibliotekaLogo className="h-10 w-auto transition-all duration-300 px-2" />              
               </a>
             </div>
           </div>
