@@ -194,6 +194,30 @@ const Footer = () => {
   );
 };
 
+const PartnersSection = () => {
+  return (
+    <section id="partners" className="bg-[#020202] py-16 border-t border-white/10 relative z-10">
+      <div className="container mx-auto px-4">
+        <SectionHeader title="PARTNERS_PROTOCOL" subtitle="Nasi partnerzy" align="center" />
+
+        <div className="mt-10 bg-[#050a0a] p-8 rounded-lg">
+          <div className="mx-auto flex w-full max-w-5xl flex-nowrap items-center justify-center gap-14 overflow-x-auto py-2">
+            <a href="https://zstib.edu.pl/" target="_blank" rel="noopener noreferrer" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+              <ZstibLogo className="h-24 w-auto drop-shadow-[0_0_22px_rgba(0,243,255,0.12)]" />
+            </a>
+            <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+              <MokLogo className="h-20 w-auto drop-shadow-[0_0_22px_rgba(255,42,42,0.10)]" />
+            </a>
+            <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+              <BibliotekaLogo className="h-20 w-auto max-w-[380px] px-4 drop-shadow-[0_0_22px_rgba(0,255,65,0.10)]" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -209,6 +233,7 @@ const App: React.FC = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
+        <PartnersSection />
         <Footer />
       </div>
     </Router>
