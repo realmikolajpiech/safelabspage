@@ -44,3 +44,14 @@ export const BibliotekaLogo = ({ className = "h-10" }: { className?: string }) =
     />
   );
 };
+
+export const UtwLogo = ({ className = "h-10" }: { className?: string }) => {
+  const logoUrl = new URL('../assets/utw-logo.png', import.meta.url).href;
+  return (
+    <img
+      src={logoUrl}
+      alt="UTW Brzesko"
+      className={`${className} object-contain`}
+    />
+  );
+};

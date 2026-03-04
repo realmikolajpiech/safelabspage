@@ -7,7 +7,7 @@ import MatrixBackground from './components/MatrixBackground';
 import CyberButton from './components/CyberButton';
 import SectionHeader from './components/SectionHeader';
 import ContactTerminal from './components/ContactTerminal';
-import { SafeLabsLogo, ZstibLogo ,MokLogo, BibliotekaLogo} from './components/Logos';
+import { SafeLabsLogo, ZstibLogo ,MokLogo, BibliotekaLogo, UtwLogo} from './components/Logos';
 
 import MainPage from './pages/MainPage';
 import PasswordCheckPage from './pages/PasswordCheckPage';
@@ -69,6 +69,9 @@ const Navigation = () => {
               </a>
               <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="group/sponsor transition-all">
                 <BibliotekaLogo className="h-10 w-auto transition-all duration-300 px-2" />              
+              </a>
+              <a href="https://mok-brzesko.pl/utw/" target="_blank" rel="noopener noreferrer" className="group/sponsor transition-all">
+                <UtwLogo className="h-12 w-auto transition-all duration-300" />
               </a>
             </div>
           </div>
@@ -210,6 +213,9 @@ const PartnersSection = () => {
             </a>
             <a href="https://mok-brzesko.pl/" target="_blank" rel="noopener noreferrer" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
               <BibliotekaLogo className="h-20 w-auto max-w-[380px] px-4 drop-shadow-[0_0_22px_rgba(0,255,65,0.10)]" />
+            </a>
+            <a href="https://mok-brzesko.pl/utw/" target="_blank" rel="noopener noreferrer" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+              <UtwLogo className="h-24 w-auto drop-shadow-[0_0_22px_rgba(255,255,0,0.10)]" />
             </a>
           </div>
         </div>
