@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Unlock, AlertTriangle, CheckCircle, RefreshCw, Key, Zap } from 'lucide-react';
 import zxcvbn from 'zxcvbn';
+import { ZXCVBN_PL_USER_INPUTS } from '../data/zxcvbnUserInputsPL';
 import SectionHeader from '../components/SectionHeader';
 import CyberButton from '../components/CyberButton';
 import TerminalWindow from '../components/TerminalWindow';
@@ -94,6 +95,8 @@ const translateFeedback = (feedback: zxcvbn.ZXCVBNFeedback): string[] => {
       "Top 10 common passwords are easy to guess": "To jedno z 10 najpopularniejszych haseł",
       "Top 100 common passwords are easy to guess": "To jedno ze 100 najpopularniejszych haseł",
       "This is similar to a commonly used password": "To hasło jest podobne do często używanego hasła",
+      "Names and surnames by themselves are easy to guess": "Imiona i nazwiska same w sobie są łatwe do odgadnięcia",
+      "Common names and surnames are easy to guess": "Popularne imiona i nazwiska są łatwe do odgadnięcia",
       "Capitalization doesn't help very much": "Wielkie litery na początku nie zwiększają znacząco siły",
       "All-uppercase is almost as easy to guess as all-lowercase": "Same wielkie litery są tak łatwe jak same małe",
       "Reversed words are not much harder to guess": "Odwrócone słowa nie są trudniejsze do złamania",
@@ -138,6 +141,12 @@ const PasswordCheckPage = () => {
   const [password, setPassword] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [analysisStage, setAnalysisStage] = useState<'idle' | 'loading_dict' | 'checking'>('idle');
+  const [dictionaryInfo, setDictionaryInfo] = useState<{
+    status: 'idle' | 'loading' | 'ready' | 'error';
+    userInputsSize?: number;
+    warning?: string;
+  }>({ status: 'idle' });
   const [result, setResult] = useState<null | {
     score: number;
     strength: string;
@@ -146,30 +155,134 @@ const PasswordCheckPage = () => {
     timeToCrack: string;
   }>(null);
 
-  const checkPassword = () => {
-    if (!password) return;
+  const POLISH_FREQ_50K_URL =
+    'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2016/pl/pl_50k.txt';
+  const POLISH_WORDLIST_CACHE_KEY = 'safe_labs_pl_50k_cache_v1';
+
+  const [workerState] = useState(() => ({
+    worker: null as null | Worker,
+    nextRequestId: 1,
+    pending: new Map<number, { resolve: (value: any) => void; reject: (err: any) => void }>(),
+  }));
+
+  useEffect(() => {
+    const worker = new Worker(new URL('../workers/passwordStrengthWorker.ts', import.meta.url), { type: 'module' });
+    workerState.worker = worker;
+
+    worker.onmessage = (event: MessageEvent<any>) => {
+      const data = event.data;
+      const requestId = data?.requestId;
+      if (typeof requestId !== 'number') return;
+      const pending = workerState.pending.get(requestId);
+      if (!pending) return;
+      workerState.pending.delete(requestId);
+
+      if (data?.type === 'error') {
+        pending.reject(new Error(data?.message || 'Błąd'));
+        return;
+      }
+      pending.resolve(data);
+    };
+
+    return () => {
+      workerState.pending.clear();
+      worker.terminate();
+      workerState.worker = null;
+    };
+  }, [workerState]);
+
+  const callWorker = (message: { type: string; [key: string]: any }) => {
+    const worker = workerState.worker;
+    if (!worker) return Promise.reject(new Error('Brak workera'));
+
+    const requestId = workerState.nextRequestId++;
+    return new Promise<any>((resolve, reject) => {
+      workerState.pending.set(requestId, { resolve, reject });
+      worker.postMessage({ ...message, requestId });
+    });
+  };
+
+  const ensureDictionaryReady = async () => {
+    if (dictionaryInfo.status === 'ready') return;
+    if (dictionaryInfo.status === 'loading') return;
+
+    setDictionaryInfo({ status: 'loading' });
+    try {
+      let cachedText: string | null = null;
+      try {
+        cachedText = localStorage.getItem(POLISH_WORDLIST_CACHE_KEY);
+      } catch {
+        cachedText = null;
+      }
+
+      let wordlistText: string | undefined;
+      if (typeof cachedText === 'string' && cachedText.length > 0) {
+        wordlistText = cachedText;
+      } else {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10_000);
+        try {
+          const res = await fetch(POLISH_FREQ_50K_URL, { signal: controller.signal });
+          if (res.ok) {
+            const text = await res.text();
+            wordlistText = text;
+            if (text.length > 0 && text.length < 2_500_000) {
+              try {
+                localStorage.setItem(POLISH_WORDLIST_CACHE_KEY, text);
+              } catch {
+              }
+            }
+          }
+        } catch {
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      }
+
+      const ready = await callWorker({
+        type: 'init',
+        baseUserInputs: ZXCVBN_PL_USER_INPUTS,
+        polishWordlistText: wordlistText,
+      });
+      setDictionaryInfo({
+        status: 'ready',
+        userInputsSize: ready?.userInputsSize,
+        warning: ready?.warning,
+      });
+    } catch {
+      setDictionaryInfo({ status: 'error' });
+    }
+  };
+
+  const checkPassword = async () => {
+    if (!password || isChecking) return;
 
     const passwordToCheck = password;
 
     setIsChecking(true);
     setResult(null);
 
-    // Simulate analysis time
-    setTimeout(() => {
-      const zResult = zxcvbn(passwordToCheck);
+    try {
+      setAnalysisStage('loading_dict');
+      await ensureDictionaryReady();
+      setAnalysisStage('checking');
+
+      const response = await callWorker({ type: 'check', password: passwordToCheck });
+      const payload = response?.payload;
 
       const speed = 10_000;
       const seconds =
-        (zResult as any)?.crack_times_seconds?.offline_slow_hashing_1e4_per_second ??
-        ((zResult as any)?.guesses ? (zResult as any).guesses / speed : 0);
+        payload?.crack_times_seconds?.offline_slow_hashing_1e4_per_second ??
+        (typeof payload?.guesses === 'number' ? payload.guesses / speed : 0);
+
       const timeToCrack = formatLargeTime(seconds);
-      const zScore = typeof (zResult as any)?.score === 'number' ? (zResult as any).score : -1;
+      const zScore = typeof payload?.score === 'number' ? payload.score : -1;
       const { strength, color, score } =
         zScore >= 0 ? getStrengthFromZxcvbnScore(zScore) : getStrengthFromSeconds(seconds);
 
       const feedback: string[] = [];
-      const translatedFeedback = translateFeedback(zResult.feedback);
-      
+      const translatedFeedback = translateFeedback(payload?.feedback as any);
+
       if (translatedFeedback.length > 0) {
         feedback.push(...translatedFeedback);
       } else {
@@ -185,7 +298,12 @@ const PasswordCheckPage = () => {
         }
       }
 
-      // Add positive reinforcement checks if not already covered by negative feedback
+      if (dictionaryInfo.status === 'ready' && dictionaryInfo.warning) {
+        feedback.unshift(`[i] ${dictionaryInfo.warning}`);
+      } else if (dictionaryInfo.status === 'ready' && typeof dictionaryInfo.userInputsSize === 'number') {
+        feedback.unshift(`[i] Słownik: ${dictionaryInfo.userInputsSize} słów`);
+      }
+
       if (passwordToCheck.length >= 12 && !feedback.some(f => f.includes("krótkie"))) {
         feedback.push("[i] Długość hasła jest bardzo dobra");
       }
@@ -200,8 +318,18 @@ const PasswordCheckPage = () => {
         feedback,
         timeToCrack
       });
+    } catch {
+      setResult({
+        score: 5,
+        strength: "BARDZO SŁABE",
+        color: "text-red-600",
+        feedback: ["[!] Nie udało się przeanalizować hasła. Spróbuj ponownie."],
+        timeToCrack: "—"
+      });
+    } finally {
       setIsChecking(false);
-    }, 800); // Slightly faster response
+      setAnalysisStage('idle');
+    }
   };
 
   return (
@@ -300,9 +428,18 @@ const PasswordCheckPage = () => {
 
                 {isChecking && (
                   <div className="space-y-1">
-                    <div className="text-cyber-cyan">Uruchamianie analizy entropii...</div>
-                    <div className="text-cyber-cyan">Sprawdzanie w bazach wycieków...</div>
-                    <div className="text-cyber-cyan">Obliczanie czasu ataku brute-force...</div>
+                    {analysisStage === 'loading_dict' ? (
+                      <>
+                        <div className="text-cyber-cyan">Pobieranie polskiego słownika...</div>
+                        <div className="text-cyber-cyan">Przygotowywanie analizy (może potrwać kilka sekund)...</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-cyber-cyan">Uruchamianie analizy entropii...</div>
+                        <div className="text-cyber-cyan">Sprawdzanie w bazach wycieków...</div>
+                        <div className="text-cyber-cyan">Obliczanie czasu ataku brute-force...</div>
+                      </>
+                    )}
                     <div className="w-full bg-gray-800 h-2 rounded mt-2 overflow-hidden">
                       <div className="h-full bg-cyber-cyan animate-[width_1.5s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
                     </div>
