@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Facebook, Instagram, Terminal, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 
 import MatrixBackground from './components/MatrixBackground';
 import CyberButton from './components/CyberButton';
@@ -241,6 +242,7 @@ const App: React.FC = () => {
 
         <PartnersSection />
         <Footer />
+        <Analytics />
       </div>
     </Router>
   );
