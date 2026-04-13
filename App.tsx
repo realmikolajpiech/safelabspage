@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Facebook, Instagram, Terminal, Lock } from 'lucide-react';
+import { Menu, X, Facebook, Instagram, Terminal, Lock, BookDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import MatrixBackground from './components/MatrixBackground';
@@ -11,6 +11,7 @@ import { SafeLabsLogo, ZstibLogo ,MokLogo, BibliotekaLogo, UtwLogo} from './comp
 
 import MainPage from './pages/MainPage';
 import PasswordCheckPage from './pages/PasswordCheckPage';
+import EbookPage from './pages/EbookPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const Navigation = () => {
@@ -87,6 +88,13 @@ const Navigation = () => {
             >
               <span className="flex items-center gap-2"><Lock className="w-3 h-3" /> [ SPRAWDŹ HASŁO ]</span>
             </a>
+            <a
+              href="/ebook"
+              onClick={(e) => { e.preventDefault(); navigate('/ebook'); }}
+              className={`relative transition-colors hover:drop-shadow-[0_0_18px_rgba(0,243,255,0.45)] ${location.pathname === '/ebook' ? 'text-cyber-cyan' : 'hover:text-cyber-cyan'}`}
+            >
+              <span className="flex items-center gap-2"><BookDown className="w-3 h-3" /> [ E-BOOK ]</span>
+            </a>
             <CyberButton variant="primary" href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>DOŁĄCZ TERAZ</CyberButton>
           </div>
 
@@ -109,6 +117,7 @@ const Navigation = () => {
             <a href="#threats" onClick={(e) => handleNavClick(e, 'threats')} className="text-2xl text-cyber-red">&lt; ZAGROŻENIA /&gt;</a>
             <a href="#workshops" onClick={(e) => handleNavClick(e, 'workshops')} className="text-2xl text-cyber-green">&lt; WARSZTATY /&gt;</a>
             <a href="/sprawdz-haslo" onClick={() => { navigate('/sprawdz-haslo'); toggleMenu(); }} className="text-2xl text-cyber-pink">&lt; SPRAWDŹ HASŁO /&gt;</a>
+            <a href="/ebook" onClick={() => { navigate('/ebook'); toggleMenu(); }} className="text-2xl text-cyber-cyan">&lt; E-BOOK /&gt;</a>
             <CyberButton onClick={(e) => handleNavClick(e, 'contact')} href="#contact">ZAPISZ SIĘ</CyberButton>
           </motion.div>
         )}
@@ -236,6 +245,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/sprawdz-haslo" element={<PasswordCheckPage />} />
+          <Route path="/ebook" element={<EbookPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 

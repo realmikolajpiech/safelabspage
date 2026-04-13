@@ -28,6 +28,10 @@ const MainPage = () => {
               <span className="w-2 h-2 bg-cyber-cyan rounded-full animate-pulse"></span>
               STATUS: SYSTEM_UNSECURED
             </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 ml-2 border border-cyber-pink/30 bg-cyber-pink/10 text-cyber-pink font-mono text-xs rounded">
+              <span className="w-2 h-2 bg-cyber-pink rounded-full animate-pulse"></span>
+              PROJEKT REALIZOWANY W RAMACH OLIMPIADY ZWOLNIENI Z TEORII
+            </div>
 
             <h1 className="text-5xl md:text-7xl font-bold text-white leading-[0.9]">
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">NIE DAJ SIĘ</span>
