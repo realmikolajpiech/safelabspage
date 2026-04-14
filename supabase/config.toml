@@ -1,0 +1,9 @@
+[project]
+id = "tqmuyclpnacnbotqjffb"
+
+[functions.daily-ebook-increment]
+enabled = true
+
+[crons.daily-ebook-increment]
+schedule = "0 0 * * *"
+function = "daily-ebook-increment"

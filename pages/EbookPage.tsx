@@ -6,23 +6,19 @@ import TerminalWindow from '../components/TerminalWindow';
 import { supabase } from '../supabaseClient';
 import ebookPdf from '../assets/SafeLabs_Ebook_Cyberbezpieczenstwo.pdf';
 
-const LOCAL_STORAGE_KEY = 'safe_labs_ebook_download_count';
 const EBOOK_SLUG = 'cyberbezpieczenstwo';
 
 const formatCount = (value: number) => new Intl.NumberFormat('pl-PL').format(Math.max(0, value));
 
 const EbookPage = () => {
   const [downloadCount, setDownloadCount] = useState<number>(0);
-  const [countSource, setCountSource] = useState<'remote' | 'local'>('local');
+  const [countStatus, setCountStatus] = useState<'ok' | 'error'>('ok');
   const [isLoadingCount, setIsLoadingCount] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [hasDownloaded, setHasDownloaded] = useState(false);
 
   useEffect(() => {
     const loadCount = async () => {
-      const localCount = Number(localStorage.getItem(LOCAL_STORAGE_KEY) || '0');
-      const safeLocalCount = Number.isFinite(localCount) && localCount > 0 ? localCount : 0;
-
       try {
         const { data, error } = await supabase
           .from('ebook_downloads')
@@ -34,14 +30,10 @@ const EbookPage = () => {
 
         const remoteCount = Number(data?.download_count || 0);
         const safeRemoteCount = Number.isFinite(remoteCount) && remoteCount > 0 ? remoteCount : 0;
-        const mergedCount = Math.max(safeRemoteCount, safeLocalCount);
-
-        setDownloadCount(mergedCount);
-        setCountSource('remote');
-        localStorage.setItem(LOCAL_STORAGE_KEY, String(mergedCount));
+        setDownloadCount(safeRemoteCount);
+        setCountStatus('ok');
       } catch {
-        setDownloadCount(safeLocalCount);
-        setCountSource('local');
+        setCountStatus('error');
       } finally {
         setIsLoadingCount(false);
       }
@@ -77,14 +69,20 @@ const EbookPage = () => {
       return;
     }
     setIsDownloading(true);
-    setHasDownloaded(true);
-
-    const nextCount = downloadCount + 1;
-    setDownloadCount(nextCount);
-    localStorage.setItem(LOCAL_STORAGE_KEY, String(nextCount));
 
     try {
-      await supabase.from('ebook_downloads').upsert(
+      const { data: currentRow, error: currentError } = await supabase
+        .from('ebook_downloads')
+        .select('download_count')
+        .eq('slug', EBOOK_SLUG)
+        .single();
+
+      if (currentError) throw currentError;
+
+      const currentCount = Number(currentRow?.download_count || 0);
+      const nextCount = (Number.isFinite(currentCount) ? currentCount : 0) + 1;
+
+      const { error: saveError } = await supabase.from('ebook_downloads').upsert(
         {
           slug: EBOOK_SLUG,
           title: 'Safe Labs - Cyberbezpieczenstwo',
@@ -93,9 +91,15 @@ const EbookPage = () => {
         },
         { onConflict: 'slug' }
       );
-      setCountSource('remote');
+      if (saveError) throw saveError;
+
+      setDownloadCount(nextCount);
+      setCountStatus('ok');
+      setHasDownloaded(true);
     } catch {
-      setCountSource('local');
+      e.preventDefault();
+      setCountStatus('error');
+      setHasDownloaded(false);
     } finally {
       setTimeout(() => setIsDownloading(false), 500);
     }
@@ -158,6 +162,11 @@ const EbookPage = () => {
                 )}
                 {hasDownloaded ? 'POBRANO POMYSLNIE' : isDownloading ? 'POBIERANIE...' : 'POBIERZ E-BOOK'}
               </a>
+              {countStatus === 'error' && (
+                <p className="text-xs font-mono text-cyber-red">
+                  Blad polaczenia z baza. Licznik nie zostal zapisany.
+                </p>
+              )}
             </div>
           </div>
 
