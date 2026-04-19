@@ -235,7 +235,7 @@ const LoginPanel: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
     setLoading(true);
     setError('');
     setTimeout(() => {
-      if (username === 'admin' && password === 'admin1!') {
+      if (username === 'admin' && password === 'Multipla19jtd') {
         sessionStorage.setItem(SESSION_KEY, '1');
         onLogin();
       } else {
