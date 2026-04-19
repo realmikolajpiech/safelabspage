@@ -13,6 +13,7 @@ import MainPage from './pages/MainPage';
 import PasswordCheckPage from './pages/PasswordCheckPage';
 import EbookPage from './pages/EbookPage';
 import NotFoundPage from './pages/NotFoundPage';
+import PanelPage from './pages/PanelPage';
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -246,6 +247,7 @@ const App: React.FC = () => {
           <Route path="/" element={<MainPage />} />
           <Route path="/sprawdz-haslo" element={<PasswordCheckPage />} />
           <Route path="/ebook" element={<EbookPage />} />
+          <Route path="/panel" element={<PanelPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
